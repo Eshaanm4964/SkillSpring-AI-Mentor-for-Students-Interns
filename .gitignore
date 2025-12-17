@@ -1,8 +1,14 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*.py[coz]
 *$py.class
 *.so
+
+# C extensions
+*.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -16,12 +22,15 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
 # Environment variables
 .env
+.envrc
 
 # Virtual Environment
 venv/
@@ -50,83 +59,52 @@ ENV/
 .coverage
 htmlcov/
 .pytest_cache/
+.pytest_cache/*
+.pytest_cache
+coverage.xml
+*.cover
+*.py.cover
+.hypothesis/
+.cover/
+nosetests.xml
 
 # Project specific
 *.db
 *.sqlite3
+*.sqlite3-journal
 
 # Vim swap files
 *.swp
 *.swo
 
-# Project specific (add any other files/folders specific to your project)
-
 # Streamlit
 .streamlit/
 
-# Node.js (if applicable)
+# Node.js
 node_modules/
 npm-debug.log*
 
-# Python virtual environment
-env/
-venv/
-ENV/
-
-# Distribution / packaging
-.Python
-build/
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
 # PyBuilder
+.pybuilder/
 target/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# IPython
+profile_default/
+ipython_config.py
 
 # pyenv
 .python-version
 
-# celery beat schedule file
+# Celery stuff
 celerybeat-schedule
+celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
 
 # Environments
 .env
+.envrc
 .venv
 env/
 venv/
@@ -134,26 +112,26 @@ ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
+# PyCharm
+.idea/
 
-# Rope project settings
-.ropeproject
+# Abstra
+.abstra/
 
-# mkdocs documentation
-/site
+# Visual Studio Code
+.vscode/
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Cursor
+.cursorignore
+.cursorindexingignore
 
-# Pyre type checker
-.pyre/
+# Ruff
+.ruff_cache/
 
-# pytype static type analyzer
-.pytype/
+# PyPI configuration file
+.pypirc
 
-# Cython debug symbols
-cython_debug/
+# Marimo
+marimo/_static/
+marimo/_lsp/
+__marimo__/
