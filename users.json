@@ -1,0 +1,18 @@
+{
+  "users": [
+    {
+      "username": "Eshaan",
+      "email": "eshaanm4964@gmail.com",
+      "hashed_password": "$pbkdf2-sha256$29000$U6r13jtnbE2J0Vqr9d7bew$2hE0KnVd7zPKcUTcGAj5j.qH6N8b/7jNRB5s0vkEJyo",
+      "full_name": "",
+      "disabled": false
+    },
+    {
+      "username": "esh",
+      "email": "eshaan4964@gmai.com",
+      "hashed_password": "$pbkdf2-sha256$29000$SWntvTcm5LyXMqb0nhNCSA$X0IOYbozp7AdONtWgx4aXpPNCnUhXl4asx2epIl.QiQ",
+      "full_name": "",
+      "disabled": false
+    }
+  ]
+}
