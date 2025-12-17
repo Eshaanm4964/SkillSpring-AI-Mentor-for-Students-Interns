@@ -288,9 +288,10 @@ def main():
             "👤 Profile",
             "📝 Resume Builder",
             "💻 Code Practice",
+            "📊 Assessment",
             "📚 Learning Path",
             "💼 Mock Interview",
-            "📊 Progress"
+            "📈 Progress"
         ]
         
         # Add community option if logged in
@@ -336,6 +337,9 @@ def main():
             show_mock_interview()
         elif "Progress" in st.session_state.current_page:
             show_progress()
+        elif "Assessment" in st.session_state.current_page:
+            from assessments_page import show_assessment_page
+            show_assessment_page(client)
         elif "Community" in st.session_state.current_page:
             if hasattr(st.session_state, 'current_community_page'):
                 show_community_page(st.session_state.current_community_page)
@@ -1424,6 +1428,21 @@ def show_mock_interview():
         st.session_state.current_question = 0
         st.session_state.answers = {}
         st.session_state.interview_started = False
+        st.session_state.show_code_editor = False
+    
+    # Company selection
+    companies = {
+        "General (All Companies)": None,
+        "Google": "google",
+        "Amazon": "amazon",
+        "Microsoft": "microsoft",
+        "Meta (Facebook)": "meta",
+        "Apple": "apple",
+        "Netflix": "netflix",
+        "Uber": "uber",
+        "Airbnb": "airbnb"
+    }
+    selected_company = st.selectbox("Select Company", list(companies.keys()))
     
     # Job role selection
     job_roles = ["Software Engineer", "Data Scientist", "Product Manager", "UX Designer", "DevOps Engineer"]
@@ -1435,52 +1454,179 @@ def show_mock_interview():
         ["Technical Interview", "Behavioral Interview", "System Design"]
     )
     
-    # Question bank
+    # Question bank with company-specific questions
     questions = {
-        "Technical Interview": [
-            "Explain a challenging technical problem you solved recently.",
-            "How would you optimize a slow database query?",
-            "Describe your experience with version control systems.",
-            "How do you handle debugging complex issues?"
-        ],
-        "Behavioral Interview": [
-            "Tell me about a time you had to work under pressure.",
-            "Describe a situation where you had to work with a difficult team member.",
-            "How do you prioritize tasks when everything is a priority?",
-            "Tell me about a time you failed and what you learned."
-        ],
-        "System Design": [
-            "How would you design a URL shortening service like bit.ly?",
-            "Design a chat application like WhatsApp.",
-            "How would you scale a web application to handle millions of users?",
-            "Design a recommendation system for an e-commerce platform."
-        ]
+        "Technical Interview": {
+            "general": [
+                "Explain a challenging technical problem you solved recently.",
+                "How would you optimize a slow database query?",
+                "Describe your experience with version control systems.",
+                "How do you handle debugging complex issues?"
+            ],
+            "google": [
+                "How would you design a system to count the frequency of words in a large document?",
+                "Find the k most frequent elements in an array.",
+                "Design an LRU (Least Recently Used) cache.",
+                "How would you implement a spell checker?"
+            ],
+            "amazon": [
+                "Design a parking lot system.",
+                "How would you design a recommendation system for Amazon products?",
+                "Find the first non-repeating character in a string.",
+                "Design an elevator system."
+            ],
+            "microsoft": [
+                "Design a URL shortening service like bit.ly.",
+                "How would you implement a text editor's undo/redo functionality?",
+                "Design a file system.",
+                "How would you implement a thread-safe queue?"
+            ]
+        },
+        "Behavioral Interview": {
+            "general": [
+                "Tell me about a time you had to work under pressure.",
+                "Describe a situation where you had to work with a difficult team member.",
+                "How do you prioritize tasks when everything is a priority?",
+                "Tell me about a time you failed and what you learned."
+            ],
+            "google": [
+                "Tell me about a time you had to make a decision without all the information.",
+                "Describe a time when you had to learn something new quickly.",
+                "How do you handle ambiguity in projects?",
+                "Tell me about a time you had to persuade someone to adopt your idea."
+            ],
+            "amazon": [
+                "Tell me about a time you had to deal with a difficult customer.",
+                "Describe a time when you had to make a decision based on incomplete data.",
+                "How do you handle competing priorities?",
+                "Tell me about a time you took a calculated risk."
+            ]
+        },
+        "System Design": {
+            "general": [
+                "How would you design a URL shortening service like bit.ly?",
+                "Design a chat application like WhatsApp.",
+                "How would you scale a web application to handle millions of users?",
+                "Design a recommendation system for an e-commerce platform."
+            ],
+            "netflix": [
+                "Design a system that can handle millions of concurrent video streams.",
+                "How would you design a recommendation system for Netflix?",
+                "Design a system to handle video uploads and processing.",
+                "How would you implement a feature to allow users to download videos for offline viewing?"
+            ],
+            "uber": [
+                "Design a ride-sharing service like Uber.",
+                "How would you implement surge pricing?",
+                "Design a system to match riders with drivers efficiently.",
+                "How would you handle real-time location tracking for millions of users?"
+            ],
+            "airbnb": [
+                "Design a booking system for Airbnb.",
+                "How would you implement a review and rating system?",
+                "Design a search system that can handle complex filters.",
+                "How would you prevent fraud in the booking system?"
+            ]
+        }
     }
     
     # Start interview
     if st.button("Start Mock Interview") or st.session_state.interview_started:
         st.session_state.interview_started = True
         
+        # Get questions based on company selection
+        company_key = companies[selected_company] or "general"
+        available_questions = questions[interview_type].get(company_key, questions[interview_type]["general"])
+        
         # Display current question
-        current_q = questions[interview_type][st.session_state.current_question]
+        current_q = available_questions[st.session_state.current_question % len(available_questions)]
         st.subheader(f"Question {st.session_state.current_question + 1}")
         st.write(current_q)
         
-        # Answer input
-        answer = st.text_area("Your answer:", key=f"answer_{st.session_state.current_question}", height=150)
+        # Toggle code editor for technical questions
+        if interview_type in ["Technical Interview", "System Design"]:
+            if st.checkbox("Use Code Editor"):
+                st.session_state.show_code_editor = True
+            else:
+                st.session_state.show_code_editor = False
+        
+        # Answer input - text area or code editor
+        if hasattr(st.session_state, 'show_code_editor') and st.session_state.show_code_editor:
+            # Initialize code editor
+            if f'code_{st.session_state.current_question}' not in st.session_state:
+                st.session_state[f'code_{st.session_state.current_question}'] = "# Write your code here\n# You can run the code to test it"
+            
+            # Code editor with syntax highlighting
+            code = st.text_area(
+                "Write your code:", 
+                value=st.session_state[f'code_{st.session_state.current_question}'],
+                height=300,
+                key=f"code_editor_{st.session_state.current_question}"
+            )
+            
+            # Save code to session state
+            st.session_state[f'code_{st.session_state.current_question}'] = code
+            
+            # Add run button
+            if st.button("Run Code"):
+                try:
+                    # Create a local namespace for the code execution
+                    local_namespace = {}
+                    # Execute the code
+                    exec(code, globals(), local_namespace)
+                    st.success("Code executed successfully!")
+                    # Show output if any
+                    if 'output' in local_namespace:
+                        st.write("Output:", local_namespace['output'])
+                except Exception as e:
+                    st.error(f"Error executing code: {str(e)}")
+            
+            # Add text area for additional explanation
+            answer = st.text_area(
+                "Explain your approach:", 
+                key=f"explanation_{st.session_state.current_question}",
+                height=150
+            )
+        else:
+            # Regular text answer
+            answer = st.text_area(
+                "Your answer:", 
+                key=f"answer_{st.session_state.current_question}", 
+                height=150
+            )
         
         if st.button("Submit Answer"):
-            # Rate the answer
-            score = rate_answer(current_q, answer, interview_type, job_role)
-            feedback = get_feedback(score, interview_type)
-            
-            # Store the answer and rating
-            st.session_state.answers[st.session_state.current_question] = {
+            # Prepare answer data
+            answer_data = {
                 'question': current_q,
-                'answer': answer,
-                'score': score,
-                'feedback': feedback
+                'score': 0,  # Will be set after rating
+                'feedback': ''
             }
+            
+            # Handle code and explanation if in code editor mode
+            if hasattr(st.session_state, 'show_code_editor') and st.session_state.show_code_editor:
+                answer_data['code'] = st.session_state.get(f'code_{st.session_state.current_question}', '')
+                answer_data['explanation'] = answer
+                answer_data['answer'] = f"Code solution with explanation: {answer}"
+                
+                # Execute code to get output (for display purposes)
+                if answer_data['code']:
+                    try:
+                        local_namespace = {}
+                        exec(answer_data['code'], globals(), local_namespace)
+                        if 'output' in local_namespace:
+                            answer_data['output'] = str(local_namespace['output'])
+                    except Exception as e:
+                        answer_data['output'] = f"Error executing code: {str(e)}"
+            else:
+                answer_data['answer'] = answer
+            
+            # Rate the answer
+            answer_data['score'] = rate_answer(current_q, answer_data['answer'], interview_type, job_role)
+            answer_data['feedback'] = get_feedback(answer_data['score'], interview_type)
+            
+            # Store the answer data
+            st.session_state.answers[st.session_state.current_question] = answer_data
             
             # Show rating and feedback
             st.subheader("Your Score")
@@ -1497,15 +1643,84 @@ def show_mock_interview():
                 
                 # Show summary
                 st.subheader("Interview Summary")
-                for i, (q, data) in enumerate(st.session_state.answers.items()):
-                    with st.expander(f"Question {q+1}: {data['question']}"):
-                        st.write(f"Your answer: {data['answer']}")
-                        st.write(f"Score: {'⭐' * data['score']} ({data['score']}/5)")
-                        st.write(f"Feedback: {data['feedback']}")
                 
-                if st.button("Restart Interview"):
+                # Calculate average score
+                total_score = sum(data['score'] for data in st.session_state.answers.values())
+                avg_score = total_score / len(st.session_state.answers) if st.session_state.answers else 0
+                
+                # Display overall performance
+                st.metric("Overall Performance", f"{avg_score:.1f}/5.0")
+                st.progress(avg_score / 5.0)
+                
+                # Display detailed feedback
+                for i, (q, data) in enumerate(st.session_state.answers.items()):
+                    with st.expander(f"Question {q+1}: {data['question']} ({'⭐' * int(round(data['score']))} {data['score']}/5)"):
+                        if 'code' in data:
+                            st.subheader("Your Code:")
+                            st.code(data['code'], language='python')
+                            if 'output' in data:
+                                st.subheader("Output:")
+                                st.code(data['output'], language='')
+                            if data.get('explanation'):
+                                st.subheader("Your Explanation:")
+                                st.write(data['explanation'])
+                        else:
+                            st.write(f"**Your answer:** {data['answer']}")
+                        
+                        st.subheader("Feedback:")
+                        st.info(data['feedback'])
+                        
+                        # Add improvement tips
+                        if data['score'] < 3:
+                            st.warning("💡 **Areas for Improvement:**")
+                            if interview_type == "Technical Interview":
+                                st.write("- Consider providing more specific examples from your experience")
+                                st.write("- Explain your thought process in more detail")
+                                if 'code' in data:
+                                    st.write("- Add comments to explain complex parts of your code")
+                            elif interview_type == "Behavioral Interview":
+                                st.write("- Use the STAR method (Situation, Task, Action, Result)")
+                                st.write("- Be more specific about your role and contributions")
+                            elif interview_type == "System Design":
+                                st.write("- Start with clarifying questions to understand requirements")
+                                st.write("- Consider edge cases and scalability from the beginning")
+                
+                # Add download button for interview report
+                interview_report = {
+                    "company": selected_company,
+                    "job_role": job_role,
+                    "interview_type": interview_type,
+                    "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "score": avg_score,
+                    "questions_answered": len(st.session_state.answers),
+                    "details": [
+                        {
+                            "question": data['question'],
+                            "answer": data.get('answer', ''),
+                            "code": data.get('code', ''),
+                            "explanation": data.get('explanation', ''),
+                            "score": data['score'],
+                            "feedback": data['feedback']
+                        }
+                        for q, data in st.session_state.answers.items()
+                    ]
+                }
+                
+                # Convert to JSON for download
+                import json
+                json_report = json.dumps(interview_report, indent=2)
+                st.download_button(
+                    label="📥 Download Interview Report",
+                    data=json_report,
+                    file_name=f"interview_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                    mime="application/json"
+                )
+                
+                if st.button("🔄 Restart Interview"):
                     st.session_state.current_question = 0
                     st.session_state.answers = {}
+                    st.session_state.interview_started = False
+                    st.session_state.show_code_editor = False
                     st.rerun()
 
 def show_progress():
