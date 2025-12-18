@@ -2,12 +2,15 @@ import streamlit as st
 import os
 import json
 import requests
+import pandas as pd
+import plotly.graph_objects as go
 from dotenv import load_dotenv
 from auth import show_login_form, is_authenticated, get_current_user, logout
 import tempfile
 from pathlib import Path
 from openai import OpenAI
 from streamlit.components.v1 import html
+from streamlit_extras.stylable_container import stylable_container
 import base64
 
 # Import new features
@@ -992,17 +995,237 @@ def generate_progress_chart(completed, total):
     return chart_html
 
 def show_learning_path():
-    st.header("Your Learning Path")
+    # Custom CSS
+    st.markdown("""
+    <style>
+        /* Track cards */
+        [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"]:hover {
+            transform: translateY(-5px);
+        }
+        .progress-bar {
+            height: 10px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+        /* Resource cards */
+        [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border-left: 4px solid #8b5cf6;
+            background: #f8fafc;
+        }
+        /* Module cards */
+        [data-testid="stVerticalBlock"] > [data-testid="stVerticalBlock"] {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Sidebar - User Profile
+    with st.sidebar:
+        st.image("https://img.icons8.com/color/96/000000/artificial-intelligence.png", width=80)
+        st.title("Your Learning Dashboard")
+        st.progress(0.15)
+        st.caption("15% of annual goal completed")
+        
+        st.subheader("Quick Stats")
+        col1, col2 = st.columns(2)
+        col1.metric("Active Tracks", "3")
+        col2.metric("Completed", "2/15")
+        
+        st.subheader("Upcoming Deadlines")
+        st.caption("Neural Networks - Due in 3 days")
+        st.caption("Python Basics - Due tomorrow")
+        
+        if st.button("🔄 Update Progress"):
+            st.success("Progress updated!")
+
+    # Main Content
+    st.title("🚀 AI/ML Engineering Learning Path")
+    st.caption("Master AI/ML Engineering through this comprehensive, project-based learning path")
+
+    # Progress Overview
+    st.subheader("🎯 Your Progress")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Completion", "15%", "5% this month")
+    with col2:
+        st.metric("Active Days Streak", "12", "+2 days")
+    with col3:
+        st.metric("Hours This Week", "3.5h", "-1.2h from last week")
+
+    # Learning Tracks
+    st.subheader("📚 Learning Tracks")
+
+    # Track 1: Deep Learning
+    with st.expander("🧠 Deep Learning (10 weeks)", expanded=True):
+        with stylable_container(key="track1"):
+            st.markdown("### 🧠 Deep Learning Fundamentals")
+            st.caption("Master the core concepts of neural networks and deep learning")
+            
+            # Progress
+            st.markdown("**Progress** 25%")
+            st.markdown('<div class="progress-bar"><div class="progress-fill" style="width: 25%"></div></div>', 
+                      unsafe_allow_html=True)
+            
+            # Modules
+            with st.expander("View Modules"):
+                tab1, tab2, tab3 = st.tabs(["Neural Networks", "Deep Learning Frameworks", "Computer Vision"])
+                
+                with tab1:
+                    st.markdown("### Neural Networks (3 weeks)")
+                    st.markdown("""
+                    - **Week 1-2**: Perceptrons & Activation Functions
+                    - **Week 2-3**: Backpropagation & Optimization
+                    - **Week 3-4**: CNNs & RNNs Architecture
+                    """)
+                    
+                    # Resources
+                    st.markdown("#### 📚 Resources")
+                    with stylable_container(key="resource1"):
+                        st.markdown("🎥 [Neural Networks - 3Blue1Brown](https://youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)")
+                        st.markdown("📖 [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/)")
+                        st.markdown("💻 [Interactive NN Playground](https://playground.tensorflow.org/)")
+                    
+                    # Action Buttons
+                    col1, col2 = st.columns(2)
+                    col1.button("Start Learning", key="nn_start", use_container_width=True)
+                    col2.button("Take Quiz", key="nn_quiz", use_container_width=True)
+                
+                with tab2:
+                    st.markdown("### Deep Learning Frameworks (4 weeks)")
+                    st.markdown("""
+                    - **Week 1-2**: TensorFlow/Keras Fundamentals
+                    - **Week 2-3**: PyTorch Basics
+                    - **Week 3-4**: Advanced Model Architectures
+                    """)
+                    
+                    st.markdown("#### 📚 Resources")
+                    with stylable_container(key="resource2"):
+                        st.markdown("📖 [TensorFlow Documentation](https://www.tensorflow.org/guide)")
+                        st.markdown("🎥 [PyTorch Tutorials](https://pytorch.org/tutorials/)")
+                    
+                    col1, col2 = st.columns(2)
+                    col1.button("Start Learning", key="dl_start", use_container_width=True)
+                    col2.button("Take Quiz", key="dl_quiz", use_container_width=True)
+                
+                with tab3:
+                    st.markdown("### Computer Vision (3 weeks)")
+                    st.markdown("""
+                    - **Week 1**: Image Processing Basics
+                    - **Week 2**: Object Detection
+                    - **Week 3**: Image Segmentation
+                    """)
+                    
+                    st.markdown("#### 📚 Resources")
+                    with stylable_container(key="resource3"):
+                        st.markdown("📖 [CS231n: Convolutional Neural Networks](http://cs231n.stanford.edu/)")
+                        st.markdown("💻 [OpenCV Tutorials](https://docs.opencv.org/master/d9/df8/tutorial_root.html)")
+                    
+                    col1, col2 = st.columns(2)
+                    col1.button("Start Learning", key="cv_start", use_container_width=True)
+                    col2.button("Take Quiz", key="cv_quiz", use_container_width=True)
+
+    # Track 2: Natural Language Processing
+    with st.expander("📝 Natural Language Processing (7 weeks)"):
+        with stylable_container(key="track2"):
+            st.markdown("### 📝 Natural Language Processing")
+            st.caption("From text processing to advanced language models")
+            st.progress(0.1)
+            
+            st.markdown("""
+            - **Text Processing (2 weeks)**: Tokenization, stemming, lemmatization
+            - **Transformers & LLMs (3 weeks)**: BERT, GPT architectures
+            - **NLP Applications (2 weeks)**: Sentiment analysis, text generation
+            """)
+            
+            st.markdown("#### 🎯 Learning Outcomes")
+            st.markdown("""
+            - Build and train NLP models
+            - Work with transformer architectures
+            - Deploy NLP applications
+            """)
+
+    # Roadmap Visualization
+    st.subheader("🗺️ Learning Roadmap")
+    fig = go.Figure(go.Gantt(
+        y = ["Deep Learning", "NLP", "MLOps"],
+        x = [0, 10, 17],  # Start weeks
+        xend = [10, 17, 22],  # End weeks
+        text = ["10 weeks", "7 weeks", "5 weeks"],
+        textposition = "auto",
+        marker = dict(color = ["#6366f1", "#8b5cf6", "#a78bfa"]),
+        hoverinfo = "text",
+        hovertext = ["Deep Learning Track", "NLP Track", "MLOps Track"]
+    ))
+
+    fig.update_layout(
+        title="Learning Timeline",
+        xaxis_title="Weeks",
+        yaxis_title="Track",
+        height=200,
+        showlegend=False,
+        margin=dict(l=0, r=0, t=30, b=0)
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    # Recommended Next Steps
+    st.subheader("👉 Recommended Next")
+    with stylable_container(key="next_steps"):
+        st.markdown("### 🧠 Neural Networks Fundamentals")
+        st.markdown("Start with the basics of how neural networks work")
+        st.progress(0.2)
+        st.button("Continue Learning", type="primary", use_container_width=True, key="continue_learning_btn")
+
+    # Achievement Badges
+    st.subheader("🏆 Your Achievements")
     
-    # Initialize session state for learning path if not exists
-    if 'learning_path' not in st.session_state:
-        st.session_state.learning_path = {}
-    if 'learning_goals' not in st.session_state:
-        st.session_state.learning_goals = {}
+    badge_style = """
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 16px;
+        background: linear-gradient(135deg, #ffffff, #f9fafb);
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    """
     
-    # Comprehensive Learning Paths Configuration
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        with stylable_container(css_styles=badge_style, key="badge1"):
+            st.markdown("🎓 **Python Pro**")
+            st.caption("Completed Python Fundamentals")
+
+    with col2:
+        with stylable_container(css_styles=badge_style, key="badge2"):
+            st.markdown("📊 **Data Wrangler**")
+            st.caption("Mastered Pandas & NumPy")
+
+    with col3:
+        with stylable_container(css_styles=badge_style, key="badge3"):
+            st.markdown("🤖 **ML Enthusiast**")
+            st.caption("Completed first ML project")
+
+    # Define learning paths
     LEARNING_PATHS = {
-        # Software Development & Web/Mobile
         'Frontend Development': {
             'Core Technologies': [
                 'HTML5 & CSS3 Fundamentals (2 weeks)',
